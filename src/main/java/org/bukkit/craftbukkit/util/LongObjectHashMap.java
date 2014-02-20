@@ -29,6 +29,9 @@ public class LongObjectHashMap<V> implements Cloneable, Serializable {
     private transient int      modCount;
     private transient int      size;
 
+    private transient long lastKey;
+    private transient V lastValue;
+
     public LongObjectHashMap() {
         initialize();
     }
@@ -61,23 +64,32 @@ public class LongObjectHashMap<V> implements Cloneable, Serializable {
     }
 
     public V get(long key) {
+        if (key == lastKey) {
+            return lastValue;
+        }
+        lastKey = key;
+
         int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
         long[] inner = keys[index];
-        if (inner == null) return null;
+        if (inner == null) return lastValue = null;
 
         for (int i = 0; i < inner.length; i++) {
             long innerKey = inner[i];
             if (innerKey == EMPTY_KEY) {
-                return null;
+                return lastValue = null;
             } else if (innerKey == key) {
-                return values[index][i];
+                return lastValue = values[index][i];
             }
         }
 
-        return null;
+        return lastValue = null;
     }
 
     public V put(long key, V value) {
+        if (key == lastKey) {
+            lastValue = value;
+        }
+
         int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
         long[] innerKeys = keys[index];
         V[] innerValues = values[index];
@@ -124,6 +136,10 @@ public class LongObjectHashMap<V> implements Cloneable, Serializable {
     }
 
     public V remove(long key) {
+        if (key == lastKey) {
+            lastValue = null;
+        }
+
         int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
         long[] inner = keys[index];
         if (inner == null) {
@@ -169,6 +185,8 @@ public class LongObjectHashMap<V> implements Cloneable, Serializable {
         if (size == 0) {
             return;
         }
+
+        lastValue = null;
 
         modCount++;
         size = 0;
