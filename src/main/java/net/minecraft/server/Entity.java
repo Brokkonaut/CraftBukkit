@@ -1191,6 +1191,12 @@ public abstract class Entity {
                     EntityInsentient entityinsentient = (EntityInsentient) entity;
                     entityinsentient.persistent = !entityinsentient.isTypeNotPersistent();
                 }
+
+                // Initialize equipment cache
+                for (int i = 0; i < entity.g.length; ++i) {
+                    ItemStack equipment = entity.getEquipment(i);
+                    entity.g[i] = equipment == null ? null : equipment.cloneItemStack();
+                }
             }
             // CraftBukkit end
 

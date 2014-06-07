@@ -21,7 +21,7 @@ public abstract class EntityLiving extends Entity {
     private AttributeMapBase d;
     public CombatTracker combatTracker = new CombatTracker(this); // CraftBukkit - private -> public, remove final
     public final HashMap effects = new HashMap(); // CraftBukkit - protected -> public
-    private final ItemStack[] g = new ItemStack[5];
+    public final ItemStack[] g = new ItemStack[5]; // CraftBukkit - private -> public
     public boolean at;
     public int au;
     public int av;
