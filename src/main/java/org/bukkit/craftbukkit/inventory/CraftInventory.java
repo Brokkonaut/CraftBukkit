@@ -276,6 +276,7 @@ public class CraftInventory implements Inventory {
 
         for (int i = 0; i < items.length; i++) {
             ItemStack item = items[i];
+            int remainingAmount = item.getAmount();
             while (true) {
                 // Do we already have a stack of it?
                 int firstPartial = firstPartial(item);
@@ -287,15 +288,17 @@ public class CraftInventory implements Inventory {
 
                     if (firstFree == -1) {
                         // No space at all!
-                        leftover.put(i, item);
+                        ItemStack leftoverStack = item.clone();
+                        leftoverStack.setAmount(remainingAmount);
+                        leftover.put(i, leftoverStack);
                         break;
                     } else {
                         // More than a single stack!
-                        if (item.getAmount() > getMaxItemStack()) {
+                        if (remainingAmount > getMaxItemStack()) {
                             CraftItemStack stack = CraftItemStack.asCraftCopy(item);
                             stack.setAmount(getMaxItemStack());
                             setItem(firstFree, stack);
-                            item.setAmount(item.getAmount() - getMaxItemStack());
+                            remainingAmount = remainingAmount - getMaxItemStack();
                         } else {
                             // Just store it
                             setItem(firstFree, item);
@@ -306,19 +309,18 @@ public class CraftInventory implements Inventory {
                     // So, apparently it might only partially fit, well lets do just that
                     ItemStack partialItem = getItem(firstPartial);
 
-                    int amount = item.getAmount();
                     int partialAmount = partialItem.getAmount();
                     int maxAmount = partialItem.getMaxStackSize();
 
                     // Check if it fully fits
-                    if (amount + partialAmount <= maxAmount) {
-                        partialItem.setAmount(amount + partialAmount);
+                    if (remainingAmount + partialAmount <= maxAmount) {
+                        partialItem.setAmount(remainingAmount + partialAmount);
                         break;
                     }
 
                     // It fits partially
                     partialItem.setAmount(maxAmount);
-                    item.setAmount(amount + partialAmount - maxAmount);
+                    remainingAmount = remainingAmount + partialAmount - maxAmount;
                 }
             }
         }
